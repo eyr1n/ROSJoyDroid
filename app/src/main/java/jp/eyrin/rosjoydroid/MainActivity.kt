@@ -18,16 +18,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import jp.eyrin.rosjoydroid.ui.theme.ROSJoyDroidTheme
 import java.util.Timer
 import java.util.TimerTask
@@ -47,9 +45,9 @@ class MainActivity : GamepadActivity() {
             var period by remember { prefs.mutableStateOf("period", 20L) }
             var deadZone by remember { prefs.mutableStateOf("deadZone", 0.05f) }
 
-            DisposableEffect(domainId, ns, period) {
+            LifecycleResumeEffect(domainId, ns, period) {
                 startPublishJoy(domainId, ns, period)
-                onDispose {
+                onPauseOrDispose {
                     stopPublishJoy()
                 }
             }
@@ -80,7 +78,7 @@ class MainActivity : GamepadActivity() {
                         ) {
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 OutlinedTextField(
-                                    label = { Text(text = "Domain ID") },
+                                    label = { Text("Domain ID") },
                                     value = domainId.toString(),
                                     onValueChange = {
                                         domainId = (it.toIntOrNull() ?: 0).coerceIn(0, 101)
@@ -89,7 +87,7 @@ class MainActivity : GamepadActivity() {
                                     singleLine = true,
                                 )
                                 OutlinedTextField(
-                                    label = { Text(text = "Namespace") },
+                                    label = { Text("Namespace") },
                                     value = ns,
                                     onValueChange = {
                                         ns = it
@@ -100,7 +98,7 @@ class MainActivity : GamepadActivity() {
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                 OutlinedTextField(
-                                    label = { Text(text = "Period(ms)") },
+                                    label = { Text("Period(ms)") },
                                     value = period.toString(),
                                     onValueChange = {
                                         period = max(it.toLongOrNull() ?: 20, 1)
@@ -109,7 +107,7 @@ class MainActivity : GamepadActivity() {
                                     singleLine = true,
                                 )
                                 OutlinedTextField(
-                                    label = { Text(text = "Dead zone") },
+                                    label = { Text("Dead zone") },
                                     value = deadZone.toString(),
                                     onValueChange = {
                                         deadZone = (it.toFloatOrNull() ?: 0.05f).coerceIn(0f, 1f)
@@ -125,12 +123,8 @@ class MainActivity : GamepadActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        stopPublishJoy()
-    }
-
     private fun startPublishJoy(domainId: Int, ns: String, period: Long) {
+        stopPublishJoy()
         createJoyPublisher(domainId, ns)
         publishJoyTimer = Timer().also {
             it.schedule(object : TimerTask() {
@@ -143,7 +137,7 @@ class MainActivity : GamepadActivity() {
     }
 
     private fun stopPublishJoy() {
-        publishJoyTimer.cancel()
+        runCatching { publishJoyTimer.cancel() }
         destroyJoyPublisher()
     }
 
@@ -155,20 +149,5 @@ class MainActivity : GamepadActivity() {
         init {
             System.loadLibrary("rosjoydroid")
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!", modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ROSJoyDroidTheme {
-        Greeting("Android")
     }
 }
