@@ -68,9 +68,22 @@ class MainActivity : GamepadActivity() {
                             text = "ROSJoyDroid",
                             fontSize = 32.sp,
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            modifier = Modifier.width(400.dp),
+                            value = ns,
+                            onValueChange = {
+                                ns = it
+                            },
+                            label = { Text("Namespace") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            singleLine = true,
+                        )
+                        Row(
+                            modifier = Modifier.width(400.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
                             OutlinedTextField(
-                                modifier = Modifier.width(160.dp),
+                                modifier = Modifier.weight(1f),
                                 value = domainId.toString(),
                                 onValueChange = {
                                     domainId = (it.toIntOrNull() ?: 0).coerceIn(0, 101)
@@ -80,19 +93,7 @@ class MainActivity : GamepadActivity() {
                                 singleLine = true,
                             )
                             OutlinedTextField(
-                                modifier = Modifier.width(160.dp),
-                                value = ns,
-                                onValueChange = {
-                                    ns = it
-                                },
-                                label = { Text("Namespace") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                singleLine = true,
-                            )
-                        }
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlinedTextField(
-                                modifier = Modifier.width(160.dp),
+                                modifier = Modifier.weight(1f),
                                 value = period.toString(),
                                 onValueChange = {
                                     period = max(it.toLongOrNull() ?: 20, 1)
@@ -102,7 +103,7 @@ class MainActivity : GamepadActivity() {
                                 singleLine = true,
                             )
                             OutlinedTextField(
-                                modifier = Modifier.width(160.dp),
+                                modifier = Modifier.weight(1f),
                                 value = deadZone.toString(),
                                 onValueChange = {
                                     deadZone = (it.toFloatOrNull() ?: 0.05f).coerceIn(0f, 1f)
